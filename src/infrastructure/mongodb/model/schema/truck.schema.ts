@@ -1,4 +1,5 @@
 import { Document, Schema } from 'mongoose';
+import { TruckStatus } from '../../../../domain/truckStatus';
 
 export interface ITruckDocument extends Document {
   container: {
@@ -9,6 +10,7 @@ export interface ITruckDocument extends Document {
     };
   };
   licensePlate: string;
+  status: TruckStatus;
 }
 
 export const TruckSchema = new Schema({
@@ -19,5 +21,6 @@ export const TruckSchema = new Schema({
       type: String
     }
   },
-  licensePlate: String
+  licensePlate: String,
+  status: TruckStatus
 });
