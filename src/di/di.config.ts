@@ -26,7 +26,16 @@ diContainer
   .bind<MessagePublisherProvider>(TYPES.MessagePublisherProvider)
   .toProvider<IMessagePublisher>(context => {
     return async (exchange: string) => {
-      const channel = await getRabbitMQChannel(exchange);
+      const channel = context.container.get<RabbitMQChannel>(
+        TYPES.RabbitMQChannel
+      );
+
+      // We have the connection and channel now
+      // Need to assert the exchange (this ensures the exchange exists)
+      await channel.assertExchange(exchange, 'fanout', {
+        durable: true,
+        autoDelete: false
+      });
 
       const publisher = new RabbitMQMessagePublisher(exchange, channel);
       return publisher;

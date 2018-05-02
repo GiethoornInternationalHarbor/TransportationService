@@ -12,18 +12,29 @@ import {
   getDatabaseClient,
   MongoDbClient
 } from '../infrastructure/mongodb/mongodb.client';
+import {
+  getRabbitMQChannel,
+  RabbitMQChannel
+} from '../infrastructure/rabbitmq/rabbitmq.channel';
 import { TYPES } from './types';
 
 export async function bootstrap(container: Container) {
   const port = process.env.PORT || 3000;
 
   if (container.isBound(TYPES.App) === false) {
-    const dbClient = await getDatabaseClient();
+    const [dbClient, rabbitMqClient] = await Promise.all([
+      getDatabaseClient(),
+      getRabbitMQChannel()
+    ]);
 
     // Add the db to the di container
     container
       .bind<MongoDbClient>(TYPES.MongoDbClient)
       .toConstantValue(dbClient);
+    container
+      .bind<RabbitMQChannel>(TYPES.RabbitMQChannel)
+      .toConstantValue(rabbitMqClient);
+
     const server = new InversifyExpressServer(container);
 
     server.setConfig(expressApp => {
