@@ -1,6 +1,10 @@
 import { Container } from 'inversify';
 import { ITruckService } from '../application/services/itruck.service';
 import { IMessagePublisher } from '../infrastructure/messaging/imessage.publisher';
+import {
+  getDatabaseClient,
+  MongoDbClient
+} from '../infrastructure/mongodb/mongodb.client';
 import { MongoDbTruckRepository } from '../infrastructure/mongodb/mongodb.truck.repository';
 import { RabbitMQMessagePublisher } from '../infrastructure/rabbitmq/rabbitmq.message.publisher';
 import { ITruckRepository } from '../infrastructure/repository/itruck.repository';
@@ -9,6 +13,7 @@ import { RepositoryAndMessageBrokerTruckService } from '../infrastructure/servic
 import { TYPES } from './types';
 
 const diContainer = new Container();
+
 diContainer
   .bind<IMessagePublisher>(TYPES.IMessagePublisher)
   .to(RabbitMQMessagePublisher);

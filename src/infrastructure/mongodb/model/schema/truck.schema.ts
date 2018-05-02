@@ -1,17 +1,8 @@
 import { Document, Schema } from 'mongoose';
+import { Truck } from '../../../../domain/truck';
 import { TruckStatus } from '../../../../domain/truckStatus';
 
-export interface ITruckDocument extends Document {
-  container: {
-    number: string;
-    product: {
-      name: string;
-      type: string;
-    };
-  };
-  licensePlate: string;
-  status: TruckStatus;
-}
+export interface ITruckDocument extends Truck, Document {}
 
 export const TruckSchema = new Schema({
   container: {
@@ -22,5 +13,9 @@ export const TruckSchema = new Schema({
     }
   },
   licensePlate: String,
-  status: TruckStatus
+  status: {
+    type: Number,
+    required: true,
+    default: TruckStatus.UNKNOWN
+  }
 });

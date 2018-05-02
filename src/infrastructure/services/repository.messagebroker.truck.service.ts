@@ -24,16 +24,18 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     const createdTruck = await this.truckRepository.create(arrivingTruck);
 
     // Also publish it as an message
-    await this.messagePublisher.publishMessage(
+    /*await this.messagePublisher.publishMessage(
       'TruckArrivingEvent',
       createdTruck
-    );
+    );*/
 
     return createdTruck;
   }
+
   public depart(body: any): Promise<Truck> {
     throw new Error('Method not implemented.');
   }
+
   public arrived(licensePlate: string): Promise<Truck> {
     throw new Error('Method not implemented.');
   }
