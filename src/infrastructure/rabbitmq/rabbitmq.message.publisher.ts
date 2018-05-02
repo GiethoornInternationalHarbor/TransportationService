@@ -14,13 +14,18 @@ export class RabbitMQMessagePublisher implements IMessagePublisher {
     type: string,
     data?: object | undefined
   ): Promise<void> {
-    const dataToSend = data ? JSON.stringify(data) : '';
+    return new Promise<void>((resolve, reject) => {
+      const dataToSend = data ? JSON.stringify(data) : '';
 
-    this.rabbitChannel.publish(this.exchange, '', Buffer.from(dataToSend), {
-      contentType: 'application/json',
-      type
+      try {
+        this.rabbitChannel.publish(this.exchange, '', Buffer.from(dataToSend), {
+          contentType: 'application/json',
+          type
+        });
+        resolve();
+      } catch (e) {
+        reject(e);
+      }
     });
-
-    throw new Error('Method not implemented.');
   }
 }

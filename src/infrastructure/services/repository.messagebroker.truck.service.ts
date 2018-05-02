@@ -6,6 +6,7 @@ import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
 import { TruckStatus } from '../../domain/truckStatus';
 import { IMessagePublisher } from '../messaging/imessage.publisher';
+import { MessageType } from '../messaging/message.types';
 import { RabbitMQExchange } from '../rabbitmq/rabbitmq.exchanges';
 import { ITruckRepository } from '../repository/itruck.repository';
 
@@ -37,18 +38,50 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
 
     // Also publish it as an message
     await this.messagePublisher.publishMessage(
-      'TruckArrivingEvent',
+      MessageType.TruckArriving,
       createdTruck
     );
 
     return createdTruck;
   }
 
-  public depart(body: any): Promise<Truck> {
-    throw new Error('Method not implemented.');
+  public async depart(body: any): Promise<Truck> {
+    const departingTruck = new Truck(body);
+
+    // Update the status of the truck
+    let updatedTruck = await this.truckRepository.updateStatus(
+      departingTruck.licensePlate,
+      TruckStatus.DEPARTING
+    );
+
+    // Update the container
+    updatedTruck = await this.truckRepository.updateContainer(
+      departingTruck.licensePlate,
+      departingTruck.container
+    );
+
+    // Now publish it as an message
+    await this.messagePublisher.publishMessage(
+      MessageType.TruckDeparting,
+      updatedTruck
+    );
+
+    return updatedTruck;
   }
 
-  public arrived(licensePlate: string): Promise<Truck> {
-    throw new Error('Method not implemented.');
+  public async arrived(licensePlate: string): Promise<Truck> {
+    // Update the status of the truck
+    const updatedTruck = await this.truckRepository.updateStatus(
+      licensePlate,
+      TruckStatus.ARRIVED
+    );
+
+    // Now publish it as an message
+    await this.messagePublisher.publishMessage(
+      MessageType.TruckArrived,
+      updatedTruck
+    );
+
+    return updatedTruck;
   }
 }

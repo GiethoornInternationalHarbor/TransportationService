@@ -9,7 +9,7 @@ export const TruckSchema = new Schema({
     number: String,
     product: {
       name: String,
-      type: String
+      type: { type: String }
     }
   },
   licensePlate: String,

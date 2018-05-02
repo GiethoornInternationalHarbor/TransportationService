@@ -25,4 +25,13 @@ export class TruckController implements interfaces.Controller {
     const truck = await this.truckService.arrive(req.body);
     res.status(201).json(truck);
   }
+
+  @httpPost('/depart')
+  private async depart(
+    @request() req: express.Request,
+    @response() res: express.Response
+  ) {
+    const truck = await this.truckService.depart(req.body);
+    res.status(201).json(truck);
+  }
 }

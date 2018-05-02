@@ -1,19 +1,8 @@
 import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
+import { TruckStatus } from '../../domain/truckStatus';
 
 export interface ITruckRepository {
-  /**
-   * Finds a truck by a license plate
-   * @param plate The license plate
-   */
-  findByLicensePlate(plate: string): Promise<Truck>;
-
-  /**
-   * Finds a truck by id
-   * @param id The id to find
-   */
-  findById(id: string): Promise<Truck>;
-
   /**
    * Creates a new truck in the repository
    * @param truck The truck to create
@@ -21,9 +10,16 @@ export interface ITruckRepository {
   create(truck: Truck): Promise<Truck>;
 
   /**
+   * Updates the container that is on the truck
+   * @param plate The plate of the truck
+   * @param container The container that is currently on the truck
+   */
+  updateContainer(plate: string, container?: Container): Promise<Truck>;
+
+  /**
    * Updates the status of the truck
-   * @param id The id to update
+   * @param plate The plate of the truck
    * @param newStatus The new status of the truck
    */
-  updateStatus(id: string, newStatus: number): Promise<Truck>;
+  updateStatus(plate: string, newStatus: TruckStatus): Promise<Truck>;
 }
