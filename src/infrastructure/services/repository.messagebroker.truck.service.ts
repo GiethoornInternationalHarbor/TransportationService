@@ -3,6 +3,7 @@ import { ITruckService } from '../../application/services/itruck.service';
 import { TYPES } from '../../di/types';
 import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
+import { TruckStatus } from '../../domain/truckStatus';
 import { IMessagePublisher } from '../messaging/imessage.publisher';
 import { ITruckRepository } from '../repository/itruck.repository';
 
@@ -15,6 +16,9 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
 
   public async arrive(body: any): Promise<Truck> {
     const arrivingTruck = new Truck(body);
+
+    // Ensure the status is arriving
+    arrivingTruck.status = TruckStatus.ARRIVING;
 
     // Save it in the repository, since we are sure it is valid now
     const createdTruck = await this.truckRepository.create(arrivingTruck);

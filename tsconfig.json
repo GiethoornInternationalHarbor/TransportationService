@@ -5,6 +5,7 @@
     "outDir": "dist",
     "lib": ["es6"],
     "strict": true,
+    "strictPropertyInitialization": false,
     "esModuleInterop": true,
     "inlineSourceMap": true,
     "types": ["reflect-metadata"],

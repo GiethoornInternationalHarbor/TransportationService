@@ -6,7 +6,11 @@ export class Truck extends Model({
   container: [Container],
   licensePlate: String,
   status: BasicModel(Number).assert(n => n in TruckStatus)
-}) {}
+}) {
+  public container?: Container;
+  public licensePlate: string;
+  public status: TruckStatus;
+}
 
 Truck.defaults({
   status: TruckStatus.UNKNOWN
