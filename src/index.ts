@@ -11,7 +11,12 @@ async function runApp() {
 }
 
 (async () => {
-  await runApp();
+  try {
+    await runApp();
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
 })();
 
 export { runApp };
