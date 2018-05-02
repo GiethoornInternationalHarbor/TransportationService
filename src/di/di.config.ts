@@ -1,4 +1,4 @@
-import { Container } from 'inversify';
+import { Container, interfaces } from 'inversify';
 import { ITruckService } from '../application/services/itruck.service';
 import { IMessagePublisher } from '../infrastructure/messaging/imessage.publisher';
 import {
@@ -6,6 +6,10 @@ import {
   MongoDbClient
 } from '../infrastructure/mongodb/mongodb.client';
 import { MongoDbTruckRepository } from '../infrastructure/mongodb/mongodb.truck.repository';
+import {
+  getRabbitMQChannel,
+  RabbitMQChannel
+} from '../infrastructure/rabbitmq/rabbitmq.channel';
 import { RabbitMQMessagePublisher } from '../infrastructure/rabbitmq/rabbitmq.message.publisher';
 import { ITruckRepository } from '../infrastructure/repository/itruck.repository';
 // tslint:disable-next-line:max-line-length
@@ -14,14 +18,28 @@ import { TYPES } from './types';
 
 const diContainer = new Container();
 
+export type MessagePublisherProvider = (
+  exchange: string
+) => Promise<IMessagePublisher>;
+
 diContainer
-  .bind<IMessagePublisher>(TYPES.IMessagePublisher)
-  .to(RabbitMQMessagePublisher);
+  .bind<MessagePublisherProvider>(TYPES.MessagePublisherProvider)
+  .toProvider<IMessagePublisher>(context => {
+    return async (exchange: string) => {
+      const channel = await getRabbitMQChannel(exchange);
+
+      const publisher = new RabbitMQMessagePublisher(exchange, channel);
+      return publisher;
+    };
+  });
+
 diContainer
   .bind<ITruckRepository>(TYPES.ITruckRepository)
   .to(MongoDbTruckRepository);
+
 diContainer
   .bind<ITruckService>(TYPES.ITruckService)
-  .to(RepositoryAndMessageBrokerTruckService);
+  .to(RepositoryAndMessageBrokerTruckService)
+  .inSingletonScope();
 
 export { diContainer };

@@ -1,5 +1,6 @@
-import { inject, injectable } from 'inversify';
+import { inject, injectable, postConstruct } from 'inversify';
 import { ITruckService } from '../../application/services/itruck.service';
+import { MessagePublisherProvider } from '../../di/di.config';
 import { TYPES } from '../../di/types';
 import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
@@ -9,10 +10,19 @@ import { ITruckRepository } from '../repository/itruck.repository';
 
 @injectable()
 export class RepositoryAndMessageBrokerTruckService implements ITruckService {
+  private readonly exchange = 'GiethoornInternationalHarbor';
+  private messagePublisher: IMessagePublisher;
+
   constructor(
     @inject(TYPES.ITruckRepository) private truckRepository: ITruckRepository,
-    @inject(TYPES.IMessagePublisher) private messagePublisher: IMessagePublisher
+    @inject(TYPES.MessagePublisherProvider)
+    private messagePublisherProvider: MessagePublisherProvider
   ) {}
+
+  @postConstruct()
+  public async postInit() {
+    this.messagePublisher = await this.messagePublisherProvider(this.exchange);
+  }
 
   public async arrive(body: any): Promise<Truck> {
     const arrivingTruck = new Truck(body);
@@ -24,10 +34,10 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     const createdTruck = await this.truckRepository.create(arrivingTruck);
 
     // Also publish it as an message
-    /*await this.messagePublisher.publishMessage(
+    await this.messagePublisher.publishMessage(
       'TruckArrivingEvent',
       createdTruck
-    );*/
+    );
 
     return createdTruck;
   }
