@@ -6,11 +6,11 @@ import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
 import { TruckStatus } from '../../domain/truckStatus';
 import { IMessagePublisher } from '../messaging/imessage.publisher';
+import { RabbitMQExchange } from '../rabbitmq/rabbitmq.exchanges';
 import { ITruckRepository } from '../repository/itruck.repository';
 
 @injectable()
 export class RepositoryAndMessageBrokerTruckService implements ITruckService {
-  private readonly exchange = 'GiethoornInternationalHarbor';
   private messagePublisher: IMessagePublisher;
 
   constructor(
@@ -21,7 +21,9 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
 
   @postConstruct()
   public async postInit() {
-    this.messagePublisher = await this.messagePublisherProvider(this.exchange);
+    this.messagePublisher = await this.messagePublisherProvider(
+      RabbitMQExchange.Default
+    );
   }
 
   public async arrive(body: any): Promise<Truck> {
