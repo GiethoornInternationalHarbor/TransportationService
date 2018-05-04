@@ -10,7 +10,9 @@
       "name": "Launch Program",
       "program": "${workspaceFolder}/src/index.ts",
       "preLaunchTask": "build-ts",
-      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+      "sourceMaps": true,
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "smartStep": true
     }
   ]
 }

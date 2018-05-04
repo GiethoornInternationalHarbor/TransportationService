@@ -25,7 +25,7 @@ export class MessageBrokerHandlerTruckService {
     );
 
     console.log('Starting message handling, (handling outstanding events)');
-    await this.messageHandler.start(this.handleMessage);
+    await this.messageHandler.start(this.handleMessage.bind(this));
     console.log('Message handling started, (new events)');
   }
 
