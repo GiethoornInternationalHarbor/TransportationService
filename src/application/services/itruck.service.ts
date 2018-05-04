@@ -19,4 +19,17 @@ export interface ITruckService {
    * @param licensePlate The license plate of the truck
    */
   arrived(licensePlate: string): Promise<Truck>;
+
+  /**
+   * Handles loading the container
+   * @param licensePlate The plate of the truck
+   * @param container The container loaded on the truck
+   */
+  containerLoaded(licensePlate: string, container: Container): Promise<Truck>;
+
+  /**
+   * Handles unloading the container
+   * @param licensePlate The plate of the truck
+   */
+  containerUnloaded(licensePlate: string): Promise<Truck>;
 }

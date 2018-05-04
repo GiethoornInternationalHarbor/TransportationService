@@ -1,6 +1,6 @@
-import { inject, injectable } from 'inversify';
-import { TYPES } from '../../di/types';
+import { injectable } from 'inversify';
 import { IMessagePublisher } from '../messaging/imessage.publisher';
+import { MessageType } from '../messaging/message.types';
 import { RabbitMQChannel } from './rabbitmq.channel';
 
 @injectable()
@@ -11,16 +11,22 @@ export class RabbitMQMessagePublisher implements IMessagePublisher {
   ) {}
 
   public publishMessage(
-    type: string,
+    type: MessageType,
     data?: object | undefined
   ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
+      if (type === MessageType.Unknown) {
+        // tslint:disable-next-line:quotemark
+        reject(new Error("Unable to handle 'Unknown' message type"));
+        return;
+      }
+
       const dataToSend = data ? JSON.stringify(data) : '';
 
       try {
         this.rabbitChannel.publish(this.exchange, '', Buffer.from(dataToSend), {
           contentType: 'application/json',
-          type
+          type: MessageType.toString(type)
         });
         resolve();
       } catch (e) {

@@ -84,4 +84,15 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
 
     return updatedTruck;
   }
+
+  public async containerLoaded(
+    licensePlate: string,
+    container: Container
+  ): Promise<Truck> {
+    return this.truckRepository.updateContainer(licensePlate, container);
+  }
+
+  public async containerUnloaded(licensePlate: string): Promise<Truck> {
+    return this.truckRepository.updateContainer(licensePlate);
+  }
 }

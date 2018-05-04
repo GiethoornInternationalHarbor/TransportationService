@@ -3,11 +3,14 @@ import 'reflect-metadata';
 import dotenv from 'dotenv';
 import { bootstrap } from './di/bootstrap';
 import { diContainer } from './di/di.config';
+import { TYPES } from './di/types';
 dotenv.config();
 
 async function runApp() {
-  const app = await bootstrap(diContainer);
-  return app;
+  const expressApp = await bootstrap(diContainer);
+  const messageHandler = diContainer.get(TYPES.MessageHandler);
+
+  return Promise.all([messageHandler, expressApp]);
 }
 
 (async () => {
