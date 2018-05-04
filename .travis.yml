@@ -18,7 +18,7 @@ script:
   - docker build --pull --cache-from "${IMAGE_NAME}:latest" --tag "$IMAGE_NAME" .
 
 before_deploy:
-  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
 
 deploy:
