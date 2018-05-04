@@ -5,7 +5,7 @@ install: []
 
 env:
   global:
-    - IMAGE_NAME=GiethoornInternationalHarbor/TransportationService
+    - IMAGE_NAME=giethoorninternationalharbor/transportationservice
     - TAG=`if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then echo "latest"; else echo $TRAVIS_PULL_REQUEST_BRANCH; fi`
 
 before_script:
