@@ -21,6 +21,12 @@ export interface ITruckService {
   arrived(licensePlate: string): Promise<Truck>;
 
   /**
+   * Handles when an departing truck is cleared
+   * @param licensePlate The license plate of the truck
+   */
+  arrived(licensePlate: string): Promise<Truck>;
+
+  /**
    * Handles loading the container
    * @param licensePlate The plate of the truck
    * @param container The container loaded on the truck
@@ -32,4 +38,10 @@ export interface ITruckService {
    * @param licensePlate The plate of the truck
    */
   containerUnloaded(licensePlate: string): Promise<Truck>;
+
+  /**
+   * Handles when the truck is cleared by security
+   * @param licensePlate The plate of the truck
+   */
+  cleared(licensePlate: string): Promise<Truck>;
 }

@@ -83,4 +83,21 @@ export class MongoDbTruckRepository implements ITruckRepository {
 
     return updatedTruck;
   }
+
+  public async findByLicensePlate(plate: string): Promise<Truck> {
+    const foundModel = await this.Model.findOne({
+      licensePlate: plate
+    });
+
+    if (!foundModel) {
+      throw new Error('License plate not found');
+    }
+
+    const correctTruck = mapModelToEntity<ITruckDocument, Truck>(
+      foundModel,
+      Truck
+    );
+
+    return correctTruck;
+  }
 }

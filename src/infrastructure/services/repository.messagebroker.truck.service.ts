@@ -85,6 +85,22 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     return updatedTruck;
   }
 
+  public async departed(licensePlate: string): Promise<Truck> {
+    // Update the status of the truck
+    const updatedTruck = await this.truckRepository.updateStatus(
+      licensePlate,
+      TruckStatus.DEPARTED
+    );
+
+    // Now publish it as an message
+    await this.messagePublisher.publishMessage(
+      MessageType.TruckDeparted,
+      updatedTruck
+    );
+
+    return updatedTruck;
+  }
+
   public async containerLoaded(
     licensePlate: string,
     container: Container
@@ -94,5 +110,18 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
 
   public async containerUnloaded(licensePlate: string): Promise<Truck> {
     return this.truckRepository.updateContainer(licensePlate);
+  }
+
+  public async cleared(licensePlate: string): Promise<Truck> {
+    // First we need to find the truck
+    let truck = await this.truckRepository.findByLicensePlate(licensePlate);
+
+    if (truck.status === TruckStatus.ARRIVING) {
+      truck = await this.arrived(licensePlate);
+    } else if (truck.status === TruckStatus.DEPARTING) {
+      truck = await this.departed(licensePlate);
+    }
+
+    return truck;
   }
 }

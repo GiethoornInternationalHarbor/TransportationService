@@ -30,6 +30,13 @@ export class MessageBrokerHandlerTruckService {
   }
 
   private async handleMessage(type: MessageType, body?: any) {
+    if (!body) {
+      // We cant handle anything without a body
+      throw new Error(
+        `Expected body for message type: ${MessageType.toString(type)}`
+      );
+    }
+
     switch (type) {
       case MessageType.ShipContainerLoaded:
         await this.handleShipContainerLoading(body);
@@ -38,10 +45,13 @@ export class MessageBrokerHandlerTruckService {
         await this.handleShipContainerUnloading(body);
         break;
       }
+      case MessageType.TruckCleared: {
+        await this.handleTruckCleared(body);
+      }
     }
   }
 
-  private async handleShipContainerLoading(body?: any) {
+  private async handleShipContainerLoading(body: any) {
     const truck = new Truck(body);
 
     if (truck.container == null) {
@@ -55,9 +65,15 @@ export class MessageBrokerHandlerTruckService {
     );
   }
 
-  private async handleShipContainerUnloading(body?: any) {
+  private async handleShipContainerUnloading(body: any) {
     const truck = new Truck(body);
 
     return this.truckService.containerUnloaded(truck.licensePlate);
+  }
+
+  private async handleTruckCleared(body?: any) {
+    const truck = new Truck(body);
+
+    return this.truckService.cleared(truck.licensePlate);
   }
 }

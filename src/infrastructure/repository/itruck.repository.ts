@@ -22,4 +22,10 @@ export interface ITruckRepository {
    * @param newStatus The new status of the truck
    */
   updateStatus(plate: string, newStatus: TruckStatus): Promise<Truck>;
+
+  /**
+   * Finds a truck by license plate
+   * @param plate The plate of the truck
+   */
+  findByLicensePlate(plate: string): Promise<Truck>;
 }
