@@ -20,9 +20,10 @@ script:
 before_deploy:
   - echo "$REGISTRY_PASS" | docker login -u "$REGISTRY_USER" --password-stdin
   - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}" 
 
 deploy:
   provider: script
-  script: docker push "${IMAGE_NAME}:latest"
+  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${git_sha}" 
   on:
     branch: master
