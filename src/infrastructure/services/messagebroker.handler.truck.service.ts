@@ -39,10 +39,10 @@ export class MessageBrokerHandlerTruckService {
 
     switch (type) {
       case MessageType.ShipContainerLoaded:
-        await this.handleShipContainerLoading(body);
+        await this.handleTruckContainerUnloaded(body);
         break;
       case MessageType.ShipContainerUnloaded: {
-        await this.handleShipContainerUnloading(body);
+        await this.handleTruckContainerLoaded(body);
         break;
       }
       case MessageType.TruckCleared: {
@@ -51,7 +51,7 @@ export class MessageBrokerHandlerTruckService {
     }
   }
 
-  private async handleShipContainerLoading(body: any) {
+  private async handleTruckContainerLoaded(body: any) {
     const truck = new Truck(body);
 
     if (truck.container == null) {
@@ -65,7 +65,7 @@ export class MessageBrokerHandlerTruckService {
     );
   }
 
-  private async handleShipContainerUnloading(body: any) {
+  private async handleTruckContainerUnloaded(body: any) {
     const truck = new Truck(body);
 
     return this.truckService.containerUnloaded(truck.licensePlate);
