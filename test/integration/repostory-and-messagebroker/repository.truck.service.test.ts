@@ -19,23 +19,25 @@ describe('Repository Truck Service Tests', () => {
     // Make a snapshot before applying changes
     diContainer.snapshot();
 
-    diContainer
-      .bind<ITruckService>(TYPES.ITruckService)
-      .to(RepositoryAndMessageBrokerTruckService)
-      .inSingletonScope();
-
     diContainer.bind(TYPES.ITruckRepository).to(MockTruckRepository);
 
     // Mock the message handler
     const mock: TypeMoq.IMock<IMessagePublisher> = TypeMoq.Mock.ofType();
+    mock
+      .setup(x => x.publishMessage(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+      .returns(() => Promise.resolve());
 
     diContainer
       .bind(TYPES.MessagePublisherProvider)
       .toProvider<IMessagePublisher>(context => {
-        return async (exchange: string, queue: string) => {
-          return mock.object;
-        };
+        return (exchange: string, queue: string) =>
+          Promise.resolve(mock.object);
       });
+
+    diContainer
+      .bind<ITruckService>(TYPES.ITruckService)
+      .to(RepositoryAndMessageBrokerTruckService)
+      .inSingletonScope();
   });
 
   afterEach(() => {

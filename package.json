@@ -4,11 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register -r tsconfig-paths/register test/**/*.test.ts",
+    "test":
+      "mocha -r ts-node/register -r tsconfig-paths/register test/**/*.test.ts",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "node dist/index.js",
     "build": "npm run build-ts && npm run lint",
-    "build-ts": "tsc --project src/tsconfig.json"
+    "build-ts": "tsc"
   },
   "keywords": [],
   "author": "",

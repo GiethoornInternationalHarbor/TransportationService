@@ -12,20 +12,11 @@ import { ITruckRepository } from '../repository/itruck.repository';
 
 @injectable()
 export class RepositoryAndMessageBrokerTruckService implements ITruckService {
-  private messagePublisher: IMessagePublisher;
-
   constructor(
     @inject(TYPES.ITruckRepository) private truckRepository: ITruckRepository,
     @inject(TYPES.MessagePublisherProvider)
     private messagePublisherProvider: MessagePublisherProvider
   ) {}
-
-  @postConstruct()
-  public async postInit() {
-    this.messagePublisher = await this.messagePublisherProvider(
-      RabbitMQExchange.Default
-    );
-  }
 
   public async arrive(body: any): Promise<Truck> {
     const arrivingTruck = new Truck(body);
@@ -37,7 +28,8 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     const createdTruck = await this.truckRepository.create(arrivingTruck);
 
     // Also publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckArriving,
       createdTruck
     );
@@ -61,7 +53,8 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     );
 
     // Now publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckDeparting,
       updatedTruck
     );
@@ -77,7 +70,8 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     );
 
     // Now publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckArrived,
       updatedTruck
     );
@@ -93,7 +87,8 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     );
 
     // Now publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckDeparted,
       updatedTruck
     );
@@ -123,5 +118,13 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     }
 
     return truck;
+  }
+
+  /**
+   * Gets the message publisher
+   */
+  private async getMessagePublisher() {
+    const t = await this.messagePublisherProvider(RabbitMQExchange.Default);
+    return t;
   }
 }
