@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-// tslint:disable-next-line:ordered-imports
 import dotenv from 'dotenv';
 import { bootstrap } from './di/bootstrap';
 import { diContainer } from './di/di.config';
