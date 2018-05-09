@@ -1,10 +1,10 @@
 import { inject, injectable, postConstruct } from 'inversify';
 import { ITruckService } from '../../application/services/itruck.service';
-import { MessagePublisherProvider } from '../../di/di.config';
 import { TYPES } from '../../di/types';
 import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
 import { TruckStatus } from '../../domain/truckStatus';
+import { MessagePublisherProvider } from '../di/di.config';
 import { IMessagePublisher } from '../messaging/imessage.publisher';
 import { MessageType } from '../messaging/message.types';
 import { RabbitMQExchange } from '../rabbitmq/rabbitmq.exchanges';

@@ -24,7 +24,7 @@ export interface ITruckService {
    * Handles when an departing truck is cleared
    * @param licensePlate The license plate of the truck
    */
-  arrived(licensePlate: string): Promise<Truck>;
+  departed(licensePlate: string): Promise<Truck>;
 
   /**
    * Handles loading the container

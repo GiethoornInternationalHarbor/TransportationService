@@ -1,8 +1,8 @@
 import { inject, injectable, postConstruct } from 'inversify';
 import { ITruckService } from '../../application/services/itruck.service';
-import { MessageHandlerProvider } from '../../di/di.config';
 import { TYPES } from '../../di/types';
 import { Truck } from '../../domain/truck';
+import { MessageHandlerProvider } from '../di/di.config';
 import { IMessageHandler } from '../messaging/imessage.handler';
 import { MessageType } from '../messaging/message.types';
 import { RabbitMQExchange } from '../rabbitmq/rabbitmq.exchanges';

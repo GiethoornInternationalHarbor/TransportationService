@@ -8,32 +8,14 @@ import {
   TYPE
 } from 'inversify-express-utils';
 import '../controllers/truck.controller';
-import {
-  getDatabaseClient,
-  MongoDbClient
-} from '../infrastructure/mongodb/mongodb.client';
-import {
-  getRabbitMQChannel,
-  RabbitMQChannel
-} from '../infrastructure/rabbitmq/rabbitmq.channel';
+import { InfrastructureContainerModule } from '../infrastructure/di/di.config';
 import { TYPES } from './types';
 
 export async function bootstrap(container: Container) {
   const port = process.env.PORT || 3000;
 
   if (container.isBound(TYPES.App) === false) {
-    const [dbClient, rabbitMqClient] = await Promise.all([
-      getDatabaseClient(),
-      getRabbitMQChannel()
-    ]);
-
-    // Add the db to the di container
-    container
-      .bind<MongoDbClient>(TYPES.MongoDbClient)
-      .toConstantValue(dbClient);
-    container
-      .bind<RabbitMQChannel>(TYPES.RabbitMQChannel)
-      .toConstantValue(rabbitMqClient);
+    await container.loadAsync(InfrastructureContainerModule);
 
     const server = new InversifyExpressServer(container);
 
