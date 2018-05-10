@@ -1,7 +1,3 @@
-branches:
-  only:
-    - master
-
 jobs:
   include:
     - stage: test
@@ -9,6 +5,7 @@ jobs:
       node_js:
         - 8
       cache: yarn
+      after_success: yarn coverage
     - stage: build
       services:
         - docker
