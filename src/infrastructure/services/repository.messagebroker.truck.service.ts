@@ -24,6 +24,15 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     // Ensure the status is arriving
     arrivingTruck.status = TruckStatus.ARRIVING;
 
+    // Check if we do not already have an truck with the same id
+    const truckExists = await this.truckRepository.exists(
+      arrivingTruck.licensePlate
+    );
+
+    if (truckExists) {
+      throw new Error('Truck is already at the harbor');
+    }
+
     // Save it in the repository, since we are sure it is valid now
     const createdTruck = await this.truckRepository.create(arrivingTruck);
 

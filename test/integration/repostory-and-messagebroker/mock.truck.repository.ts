@@ -37,4 +37,8 @@ export class MockTruckRepository implements ITruckRepository {
 
     return this.trucks[index];
   }
+
+  public async exists(plate: string): Promise<boolean> {
+    return this.trucks.findIndex(x => x.licensePlate === plate) > -1;
+  }
 }

@@ -100,4 +100,8 @@ export class MongoDbTruckRepository implements ITruckRepository {
 
     return correctTruck;
   }
+
+  public async exists(plate: string): Promise<boolean> {
+    return (await this.Model.count({ licensePlate: plate })) > 0;
+  }
 }
