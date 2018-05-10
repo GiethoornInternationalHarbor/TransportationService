@@ -12,7 +12,8 @@
     "build-ts": "tsc"
   },
   "nyc": {
-    "extension": [".ts"]
+    "extension": [".ts"],
+    "all": true
   },
   "keywords": [],
   "author": "",
