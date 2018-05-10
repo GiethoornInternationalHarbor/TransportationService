@@ -100,4 +100,26 @@ export class MongoDbTruckRepository implements ITruckRepository {
 
     return correctTruck;
   }
+
+  public async exists(plate: string): Promise<boolean> {
+    return (await this.Model.count({ licensePlate: plate })) > 0;
+  }
+
+  public async removeTruck(plate: string): Promise<Truck> {
+    const foundModel = await this.Model.findOneAndRemove({
+      licensePlate: plate
+    });
+
+    if (!foundModel) {
+      // This should never ever happen
+      throw new Error('License plate not found');
+    }
+
+    const correctTruck = mapModelToEntity<ITruckDocument, Truck>(
+      foundModel,
+      Truck
+    );
+
+    return correctTruck;
+  }
 }

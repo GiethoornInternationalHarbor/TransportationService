@@ -28,4 +28,17 @@ export interface ITruckRepository {
    * @param plate The plate of the truck
    */
   findByLicensePlate(plate: string): Promise<Truck>;
+
+  /**
+   * Checks if a truck with the license plate already exists
+   * @param plate The plate to check
+   */
+  exists(plate: string): Promise<boolean>;
+
+  /**
+   * Removes a truck
+   * @param plate The plate of the truck
+   * @returns The removed truck
+   */
+  removeTruck(plate: string): Promise<Truck>;
 }

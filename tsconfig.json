@@ -11,7 +11,8 @@
     "types": ["reflect-metadata"],
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "noImplicitAny": false
+    "noImplicitAny": false,
+    "baseUrl": "."
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

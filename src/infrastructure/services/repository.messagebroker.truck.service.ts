@@ -12,20 +12,11 @@ import { ITruckRepository } from '../repository/itruck.repository';
 
 @injectable()
 export class RepositoryAndMessageBrokerTruckService implements ITruckService {
-  private messagePublisher: IMessagePublisher;
-
   constructor(
     @inject(TYPES.ITruckRepository) private truckRepository: ITruckRepository,
     @inject(TYPES.MessagePublisherProvider)
     private messagePublisherProvider: MessagePublisherProvider
   ) {}
-
-  @postConstruct()
-  public async postInit() {
-    this.messagePublisher = await this.messagePublisherProvider(
-      RabbitMQExchange.Default
-    );
-  }
 
   public async arrive(body: any): Promise<Truck> {
     const arrivingTruck = new Truck(body);
@@ -33,11 +24,21 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     // Ensure the status is arriving
     arrivingTruck.status = TruckStatus.ARRIVING;
 
+    // Check if we do not already have an truck with the same id
+    const truckExists = await this.truckRepository.exists(
+      arrivingTruck.licensePlate
+    );
+
+    if (truckExists) {
+      throw new Error('Truck is already at the harbor');
+    }
+
     // Save it in the repository, since we are sure it is valid now
     const createdTruck = await this.truckRepository.create(arrivingTruck);
 
     // Also publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckArriving,
       createdTruck
     );
@@ -61,7 +62,8 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     );
 
     // Now publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckDeparting,
       updatedTruck
     );
@@ -77,7 +79,8 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     );
 
     // Now publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckArrived,
       updatedTruck
     );
@@ -86,19 +89,17 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   }
 
   public async departed(licensePlate: string): Promise<Truck> {
-    // Update the status of the truck
-    const updatedTruck = await this.truckRepository.updateStatus(
-      licensePlate,
-      TruckStatus.DEPARTED
-    );
+    // Remove the truck from the repository since it is not at the harbor anymore
+    const removedTruck = await this.truckRepository.removeTruck(licensePlate);
 
     // Now publish it as an message
-    await this.messagePublisher.publishMessage(
+    const messagePublisher = await this.getMessagePublisher();
+    await messagePublisher.publishMessage(
       MessageType.TruckDeparted,
-      updatedTruck
+      removedTruck
     );
 
-    return updatedTruck;
+    return removedTruck;
   }
 
   public async containerLoaded(
@@ -123,5 +124,13 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     }
 
     return truck;
+  }
+
+  /**
+   * Gets the message publisher
+   */
+  private async getMessagePublisher() {
+    const t = await this.messagePublisherProvider(RabbitMQExchange.Default);
+    return t;
   }
 }
