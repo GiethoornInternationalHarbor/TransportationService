@@ -9,7 +9,11 @@ jobs:
       node_js:
         - 8
       cache: yarn
-      after_success: yarn coverage
+      scripts:
+        - yarn install codecov -g
+      after_success: 
+        - yarn coverage
+        - codecov
     - stage: build
       services:
         - docker

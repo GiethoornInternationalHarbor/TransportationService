@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "nyc mocha",
-    "coverage": "nyc report --reporter=text-lcov | coveralls",
+    "coverage": "nyc report --reporter=json > coverage/coverage.json",
     "lint": "tslint -c tslint.json -p tsconfig.json",
     "start": "node dist/index.js",
     "build": "npm run build-ts && npm run lint",
@@ -43,7 +43,6 @@
     "@types/node": "^10.0.2",
     "chai": "^4.1.2",
     "chai-as-promised": "^7.1.1",
-    "coveralls": "^3.0.1",
     "mocha": "^5.1.1",
     "nyc": "^11.7.3",
     "source-map-support": "^0.5.5",
