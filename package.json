@@ -12,9 +12,7 @@
     "build-ts": "tsc"
   },
   "nyc": {
-    "extension": [".ts", ".tsx"],
-    "exclude": ["**/*.d.ts"],
-    "all": true
+    "extension": [".ts"]
   },
   "keywords": [],
   "author": "",
