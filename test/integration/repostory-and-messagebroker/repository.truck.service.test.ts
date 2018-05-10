@@ -23,15 +23,20 @@ describe('Repository Truck Service Tests', () => {
 
     // Mock the message handler
     const mock: TypeMoq.IMock<IMessagePublisher> = TypeMoq.Mock.ofType();
-    mock
-      .setup(x => x.publishMessage(TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-      .returns(() => Promise.resolve());
+    // Setup .then handler because we need to be able to handle promises
+    mock.setup((x: any) => x.then).returns(() => undefined);
+    mock.setup(x => x.publishMessage).returns(() => {
+      return (x, y) => Promise.resolve();
+    });
 
     diContainer
       .bind(TYPES.MessagePublisherProvider)
       .toProvider<IMessagePublisher>(context => {
-        return (exchange: string, queue: string) =>
-          Promise.resolve(mock.object);
+        return (exchange: string, queue: string) => {
+          return new Promise(resolve => {
+            resolve(mock.object);
+          });
+        };
       });
 
     diContainer
@@ -53,7 +58,7 @@ describe('Repository Truck Service Tests', () => {
     };
 
     // Initial arrive should work
-    await assert.isFulfilled(truckService.arrive(truck));
+    await truckService.arrive(truck);
 
     // This should break
     await assert.isRejected(truckService.arrive(truck));
