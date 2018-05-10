@@ -89,20 +89,17 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   }
 
   public async departed(licensePlate: string): Promise<Truck> {
-    // Update the status of the truck
-    const updatedTruck = await this.truckRepository.updateStatus(
-      licensePlate,
-      TruckStatus.DEPARTED
-    );
+    // Remove the truck from the repository since it is not at the harbor anymore
+    const removedTruck = await this.truckRepository.removeTruck(licensePlate);
 
     // Now publish it as an message
     const messagePublisher = await this.getMessagePublisher();
     await messagePublisher.publishMessage(
       MessageType.TruckDeparted,
-      updatedTruck
+      removedTruck
     );
 
-    return updatedTruck;
+    return removedTruck;
   }
 
   public async containerLoaded(

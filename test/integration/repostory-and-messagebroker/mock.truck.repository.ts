@@ -41,4 +41,11 @@ export class MockTruckRepository implements ITruckRepository {
   public async exists(plate: string): Promise<boolean> {
     return this.trucks.findIndex(x => x.licensePlate === plate) > -1;
   }
+
+  public async removeTruck(plate: string): Promise<Truck> {
+    return this.trucks.splice(
+      this.trucks.findIndex(x => x.licensePlate === plate),
+      1
+    )[0];
+  }
 }

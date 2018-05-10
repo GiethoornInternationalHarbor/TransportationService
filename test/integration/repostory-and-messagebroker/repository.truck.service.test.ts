@@ -63,4 +63,27 @@ describe('Repository Truck Service Tests', () => {
     // This should break
     await assert.isRejected(truckService.arrive(truck));
   });
+
+  it('A truck with the same license plate can be arriving when it has departed before', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    // First we arrive
+    await truckService.arrive(truck);
+
+    // Next we ensure we are arrived
+    await truckService.arrived(truck.licensePlate);
+
+    // Now we are departing and departed
+    await truckService.depart(truck);
+
+    // We are fully departed now
+    await truckService.departed(truck.licensePlate);
+
+    // We should now be able to arrive again with the same license plate
+    await assert.isFulfilled(truckService.arrive(truck));
+  });
 });
