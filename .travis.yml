@@ -1,16 +1,13 @@
-cache: yarn
-
-services:
-  - docker
-
 jobs:
   include:
     - stage: test
       language: node_js
       node_js:
         - 8
-      script: yarn test
+      cache: yarn
     - stage: build
+      services:
+        - docker
       before_script:
         - docker pull "${IMAGE_NAME}:latest" || true
       install: skip
