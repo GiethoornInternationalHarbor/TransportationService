@@ -53,6 +53,23 @@ export function bootstrap(container: Container) {
           res: express.Response,
           next: express.NextFunction
         ) => {
+          if (err instanceof TypeError) {
+            res.status(400).json({
+              errors: [err.message]
+            });
+          } else {
+            next(err);
+          }
+        }
+      );
+
+      expressApp.use(
+        (
+          err: Error,
+          req: express.Request,
+          res: express.Response,
+          next: express.NextFunction
+        ) => {
           res.status(500).json({
             errors: [err.message]
           });
