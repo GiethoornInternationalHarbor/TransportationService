@@ -13,7 +13,7 @@ import { MongoDbClient } from './mongodb.client';
 export class MongoDbTruckRepository implements ITruckRepository {
   protected Model: Model<ITruckDocument>;
 
-  constructor(@inject(TYPES.MongoDbClient) dbClient: MongoDbClient) {
+  constructor(dbClient: MongoDbClient) {
     this.Model = dbClient.model<ITruckDocument>('Truck', TruckSchema);
   }
 

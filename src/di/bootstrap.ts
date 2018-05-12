@@ -11,11 +11,11 @@ import '../controllers/truck.controller';
 import { InfrastructureContainerModule } from '../infrastructure/di/di.config';
 import { TYPES } from './types';
 
-export async function bootstrap(container: Container) {
+export function bootstrap(container: Container) {
   const port = process.env.PORT || 3000;
 
   if (container.isBound(TYPES.App) === false) {
-    await container.loadAsync(InfrastructureContainerModule);
+    container.load(InfrastructureContainerModule);
 
     const server = new InversifyExpressServer(container);
 

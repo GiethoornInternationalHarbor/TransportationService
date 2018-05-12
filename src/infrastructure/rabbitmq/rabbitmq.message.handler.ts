@@ -8,7 +8,10 @@ import { RabbitMQChannel } from './rabbitmq.channel';
 
 @injectable()
 export class RabbitMQMessageHandler implements IMessageHandler {
-  constructor(private queue: string, private rabbitChannel: RabbitMQChannel) {}
+  constructor(
+    private readonly queue: string,
+    private readonly rabbitChannel: RabbitMQChannel
+  ) {}
 
   public async start(onMessage: IMessageReceivedCallback) {
     return this.rabbitChannel.consume(this.queue, async msg => {

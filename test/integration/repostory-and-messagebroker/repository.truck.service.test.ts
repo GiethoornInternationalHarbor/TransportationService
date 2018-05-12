@@ -1,31 +1,40 @@
 import { assert, use as chaiUse } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import 'mocha';
-import { Truck } from 'src/domain/truck';
-import { TruckStatus } from 'src/domain/truckStatus';
-import { IMessagePublisher } from 'src/infrastructure/messaging/imessage.publisher';
-import { MessageType } from 'src/infrastructure/messaging/message.types';
-import { ITruckRepository } from 'src/infrastructure/repository/itruck.repository';
 import * as TypeMoq from 'typemoq';
 import { ITruckService } from '../../../src/application/services/itruck.service';
 import { diContainer } from '../../../src/di/di.config';
 import { TYPES } from '../../../src/di/types';
-// tslint:disable-next-line:max-line-length
-import { RepositoryAndMessageBrokerTruckService } from '../../../src/infrastructure/services/repository.messagebroker.truck.service';
+import { Truck } from '../../../src/domain/truck';
+import { TruckStatus } from '../../../src/domain/truckStatus';
+import {
+  InfrastructureContainerModule,
+  TruckRepositoryProvider
+} from '../../../src/infrastructure/di/di.config';
+import { IMessagePublisher } from '../../../src/infrastructure/messaging/imessage.publisher';
+import { MessageType } from '../../../src/infrastructure/messaging/message.types';
+import { ITruckRepository } from '../../../src/infrastructure/repository/itruck.repository';
 import { MockTruckRepository } from './mock.truck.repository';
 
 chaiUse(chaiAsPromised);
 
 describe('Repository Truck Service Tests', () => {
+  before(() => {
+    diContainer.load(InfrastructureContainerModule);
+  });
+
   let mockedMessagePublisher: TypeMoq.IMock<IMessagePublisher>;
   beforeEach(async () => {
     // Make a snapshot before applying changes
     diContainer.snapshot();
 
+    const mockedTruckRepo = new MockTruckRepository();
+    diContainer.unbind(TYPES.TruckRepositoryProvider);
     diContainer
-      .bind(TYPES.ITruckRepository)
-      .to(MockTruckRepository)
-      .inSingletonScope();
+      .bind(TYPES.TruckRepositoryProvider)
+      .toProvider<ITruckRepository>(context => () =>
+        Promise.resolve(mockedTruckRepo)
+      );
 
     // Mock the message handler
     mockedMessagePublisher = TypeMoq.Mock.ofType();
@@ -37,6 +46,7 @@ describe('Repository Truck Service Tests', () => {
       )
       .returns(() => Promise.resolve());
 
+    diContainer.unbind(TYPES.MessagePublisherProvider);
     diContainer
       .bind(TYPES.MessagePublisherProvider)
       .toProvider<IMessagePublisher>(context => {
@@ -46,11 +56,6 @@ describe('Repository Truck Service Tests', () => {
           });
         };
       });
-
-    diContainer
-      .bind<ITruckService>(TYPES.ITruckService)
-      .to(RepositoryAndMessageBrokerTruckService)
-      .inSingletonScope();
   });
 
   afterEach(() => {
@@ -98,9 +103,12 @@ describe('Repository Truck Service Tests', () => {
   it('A message is broadcasted when an arriving truck is cleared', async () => {
     const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
 
-    const truckRepository = diContainer.get<ITruckRepository>(
-      TYPES.ITruckRepository
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
     );
+
+    const truckRepository = await truckRepositoryProvider();
+
     const truck = {
       licensePlate: 'test plate'
     };
@@ -131,9 +139,11 @@ describe('Repository Truck Service Tests', () => {
   it('A message is broadcasted when a departing truck is cleared', async () => {
     const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
 
-    const truckRepository = diContainer.get<ITruckRepository>(
-      TYPES.ITruckRepository
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
     );
+
+    const truckRepository = await truckRepositoryProvider();
 
     const truck = {
       licensePlate: 'test plate'
