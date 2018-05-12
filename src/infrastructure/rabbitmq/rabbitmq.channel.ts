@@ -26,7 +26,7 @@ export async function getRabbitMQChannel(): Promise<RabbitMQChannel> {
     {
       factor: 1,
       onRetry: err => {
-        console.warn('Retrying to connnect to AMQP', err);
+        console.warn('Retrying to connect to AMQP', err);
       }
     }
   );
