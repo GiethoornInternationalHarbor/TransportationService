@@ -178,4 +178,102 @@ describe('Repository Truck Service Tests', () => {
       TypeMoq.Times.once()
     );
   });
+
+  it('A truck is updated when a container is loaded', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    await assert.isFulfilled(truckRepository.create(new Truck(truck)));
+    await assert.isFulfilled(
+      truckRepository.updateStatus(truck.licensePlate, TruckStatus.ARRIVED)
+    );
+
+    const container = {
+      number: '123',
+      product: {
+        name: 'Ca324',
+        type: '46'
+      }
+    };
+
+    await assert.isFulfilled(
+      truckService.containerLoaded(truck.licensePlate, container)
+    );
+
+    const foundTruck = await truckRepository.findByLicensePlate(
+      truck.licensePlate
+    );
+    assert.deepEqual(foundTruck.container, container);
+  });
+
+  it('A truck is updated when a container is unloaded', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate',
+      container: {
+        number: '123',
+        product: {
+          name: 'Ca324',
+          type: '46'
+        }
+      }
+    };
+
+    await assert.isFulfilled(truckRepository.create(new Truck(truck)));
+    await assert.isFulfilled(
+      truckRepository.updateStatus(truck.licensePlate, TruckStatus.ARRIVED)
+    );
+
+    await assert.isFulfilled(
+      truckService.containerUnloaded(truck.licensePlate)
+    );
+
+    const foundTruck = await truckRepository.findByLicensePlate(
+      truck.licensePlate
+    );
+    assert.isUndefined(foundTruck.container);
+  });
+
+  it('A truck is not updated with invalid data of a container', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    await assert.isFulfilled(truckRepository.create(new Truck(truck)));
+    await assert.isFulfilled(
+      truckRepository.updateStatus(truck.licensePlate, TruckStatus.ARRIVED)
+    );
+
+    const container = {
+      number: '123'
+    };
+
+    await assert.isRejected(
+      truckService.containerLoaded(truck.licensePlate, container)
+    );
+  });
 });
