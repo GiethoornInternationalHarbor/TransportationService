@@ -2,13 +2,12 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import helmet from 'helmet';
 import { Container } from 'inversify';
-import {
-  interfaces,
-  InversifyExpressServer,
-  TYPE
-} from 'inversify-express-utils';
+import { InversifyExpressServer } from 'inversify-express-utils';
 import '../controllers/truck.controller';
-import { InfrastructureContainerModule } from '../infrastructure/di/di.config';
+import {
+  checkInfrastructureInitialization,
+  InfrastructureContainerModule
+} from '../infrastructure/di/di.config';
 import { TYPES } from './types';
 
 export function bootstrap(container: Container) {

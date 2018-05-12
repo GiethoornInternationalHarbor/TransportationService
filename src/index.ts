@@ -3,12 +3,15 @@ import { diContainer } from './di/di.config';
 // tslint:disable-next-line:ordered-imports
 import { bootstrap } from './di/bootstrap';
 import { TYPES } from './di/types';
-import { IMessageHandler } from './infrastructure/messaging/imessage.handler';
+import { checkInfrastructureInitialization } from './infrastructure/di/di.config';
 import { MessageBrokerHandlerTruckService } from './infrastructure/services/messagebroker.handler.truck.service';
 dotenv.config();
 
 async function runApp() {
   const expressApp = bootstrap(diContainer);
+
+  await checkInfrastructureInitialization();
+
   const messageHandler = diContainer.get<MessageBrokerHandlerTruckService>(
     TYPES.MessageHandler
   );

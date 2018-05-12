@@ -82,11 +82,15 @@ export const InfrastructureContainerModule = new ContainerModule(bind => {
     };
   });
 
-  bind<ITruckService>(TYPES.ITruckService)
-    .to(RepositoryAndMessageBrokerTruckService)
-    .inSingletonScope();
+  bind<ITruckService>(TYPES.ITruckService).to(
+    RepositoryAndMessageBrokerTruckService
+  );
 
   bind(TYPES.MessageHandler)
     .to(MessageBrokerHandlerTruckService)
     .inSingletonScope();
 });
+
+export async function checkInfrastructureInitialization() {
+  return Promise.all([getDatabaseClient(), getRabbitMQChannel()]);
+}

@@ -4,6 +4,8 @@ import 'mocha';
 import * as TypeMoq from 'typemoq';
 import { ITruckService } from '../../../src/application/services/itruck.service';
 import { diContainer } from '../../../src/di/di.config';
+// tslint:disable-next-line:ordered-imports
+import { bootstrap } from '../../../src/di/bootstrap';
 import { TYPES } from '../../../src/di/types';
 import { Truck } from '../../../src/domain/truck';
 import { TruckStatus } from '../../../src/domain/truckStatus';
@@ -15,12 +17,11 @@ import { IMessagePublisher } from '../../../src/infrastructure/messaging/imessag
 import { MessageType } from '../../../src/infrastructure/messaging/message.types';
 import { ITruckRepository } from '../../../src/infrastructure/repository/itruck.repository';
 import { MockTruckRepository } from './mock.truck.repository';
-
 chaiUse(chaiAsPromised);
 
 describe('Repository Truck Service Tests', () => {
   before(() => {
-    diContainer.load(InfrastructureContainerModule);
+    bootstrap(diContainer);
   });
 
   let mockedMessagePublisher: TypeMoq.IMock<IMessagePublisher>;
@@ -29,9 +30,8 @@ describe('Repository Truck Service Tests', () => {
     diContainer.snapshot();
 
     const mockedTruckRepo = new MockTruckRepository();
-    diContainer.unbind(TYPES.TruckRepositoryProvider);
     diContainer
-      .bind(TYPES.TruckRepositoryProvider)
+      .rebind(TYPES.TruckRepositoryProvider)
       .toProvider<ITruckRepository>(context => () =>
         Promise.resolve(mockedTruckRepo)
       );
@@ -46,9 +46,8 @@ describe('Repository Truck Service Tests', () => {
       )
       .returns(() => Promise.resolve());
 
-    diContainer.unbind(TYPES.MessagePublisherProvider);
     diContainer
-      .bind(TYPES.MessagePublisherProvider)
+      .rebind(TYPES.MessagePublisherProvider)
       .toProvider<IMessagePublisher>(context => {
         return (exchange: string, queue: string) => {
           return new Promise(resolve => {
