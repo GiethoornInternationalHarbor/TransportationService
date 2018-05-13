@@ -144,15 +144,13 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
    * Gets the truck repository
    */
   private async getTruckRepository() {
-    const t = await this.truckRepositoryProvider();
-    return t;
+    return this.truckRepositoryProvider();
   }
 
   /**
    * Gets the message publisher
    */
   private async getMessagePublisher() {
-    const t = await this.messagePublisherProvider(RabbitMQExchange.Default);
-    return t;
+    return this.messagePublisherProvider(RabbitMQExchange.Default);
   }
 }
