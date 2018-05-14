@@ -6,8 +6,8 @@ import { RabbitMQChannel } from './rabbitmq.channel';
 @injectable()
 export class RabbitMQMessagePublisher implements IMessagePublisher {
   constructor(
-    private exchange: string,
-    private rabbitChannel: RabbitMQChannel
+    private readonly exchange: string,
+    private readonly rabbitChannel: RabbitMQChannel
   ) {}
 
   public publishMessage(
@@ -16,7 +16,6 @@ export class RabbitMQMessagePublisher implements IMessagePublisher {
   ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       if (type === MessageType.Unknown) {
-        // tslint:disable-next-line:quotemark
         reject(new Error("Unable to handle 'Unknown' message type"));
         return;
       }

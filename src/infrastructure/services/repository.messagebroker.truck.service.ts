@@ -1,40 +1,42 @@
-import { inject, injectable, postConstruct } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { ITruckService } from '../../application/services/itruck.service';
 import { TYPES } from '../../di/types';
 import { Container } from '../../domain/container';
 import { Truck } from '../../domain/truck';
 import { TruckStatus } from '../../domain/truckStatus';
-import { MessagePublisherProvider } from '../di/di.config';
-import { IMessagePublisher } from '../messaging/imessage.publisher';
+import {
+  MessagePublisherProvider,
+  TruckRepositoryProvider
+} from '../di/di.config';
 import { MessageType } from '../messaging/message.types';
 import { RabbitMQExchange } from '../rabbitmq/rabbitmq.exchanges';
-import { ITruckRepository } from '../repository/itruck.repository';
 
 @injectable()
 export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   constructor(
-    @inject(TYPES.ITruckRepository) private truckRepository: ITruckRepository,
+    @inject(TYPES.TruckRepositoryProvider)
+    private readonly truckRepositoryProvider: TruckRepositoryProvider,
     @inject(TYPES.MessagePublisherProvider)
-    private messagePublisherProvider: MessagePublisherProvider
+    private readonly messagePublisherProvider: MessagePublisherProvider
   ) {}
 
   public async arrive(body: any): Promise<Truck> {
+    const truckRepo = await this.getTruckRepository();
+
     const arrivingTruck = new Truck(body);
 
     // Ensure the status is arriving
     arrivingTruck.status = TruckStatus.ARRIVING;
 
     // Check if we do not already have an truck with the same id
-    const truckExists = await this.truckRepository.exists(
-      arrivingTruck.licensePlate
-    );
+    const truckExists = await truckRepo.exists(arrivingTruck.licensePlate);
 
     if (truckExists) {
       throw new Error('Truck is already at the harbor');
     }
 
     // Save it in the repository, since we are sure it is valid now
-    const createdTruck = await this.truckRepository.create(arrivingTruck);
+    const createdTruck = await truckRepo.create(arrivingTruck);
 
     // Also publish it as an message
     const messagePublisher = await this.getMessagePublisher();
@@ -47,16 +49,18 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   }
 
   public async depart(body: any): Promise<Truck> {
+    const truckRepo = await this.getTruckRepository();
+
     const departingTruck = new Truck(body);
 
     // Update the status of the truck
-    let updatedTruck = await this.truckRepository.updateStatus(
+    let updatedTruck = await truckRepo.updateStatus(
       departingTruck.licensePlate,
       TruckStatus.DEPARTING
     );
 
     // Update the container
-    updatedTruck = await this.truckRepository.updateContainer(
+    updatedTruck = await truckRepo.updateContainer(
       departingTruck.licensePlate,
       departingTruck.container
     );
@@ -72,8 +76,10 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   }
 
   public async arrived(licensePlate: string): Promise<Truck> {
+    const truckRepo = await this.getTruckRepository();
+
     // Update the status of the truck
-    const updatedTruck = await this.truckRepository.updateStatus(
+    const updatedTruck = await truckRepo.updateStatus(
       licensePlate,
       TruckStatus.ARRIVED
     );
@@ -89,8 +95,10 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   }
 
   public async departed(licensePlate: string): Promise<Truck> {
+    const truckRepo = await this.getTruckRepository();
+
     // Remove the truck from the repository since it is not at the harbor anymore
-    const removedTruck = await this.truckRepository.removeTruck(licensePlate);
+    const removedTruck = await truckRepo.removeTruck(licensePlate);
 
     // Now publish it as an message
     const messagePublisher = await this.getMessagePublisher();
@@ -106,16 +114,22 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     licensePlate: string,
     container: Container
   ): Promise<Truck> {
-    return this.truckRepository.updateContainer(licensePlate, container);
+    const truckRepo = await this.getTruckRepository();
+
+    return truckRepo.updateContainer(licensePlate, container);
   }
 
   public async containerUnloaded(licensePlate: string): Promise<Truck> {
-    return this.truckRepository.updateContainer(licensePlate);
+    const truckRepo = await this.getTruckRepository();
+
+    return truckRepo.updateContainer(licensePlate);
   }
 
   public async cleared(licensePlate: string): Promise<Truck> {
+    const truckRepo = await this.getTruckRepository();
+
     // First we need to find the truck
-    let truck = await this.truckRepository.findByLicensePlate(licensePlate);
+    let truck = await truckRepo.findByLicensePlate(licensePlate);
 
     if (truck.status === TruckStatus.ARRIVING) {
       truck = await this.arrived(licensePlate);
@@ -127,10 +141,16 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
   }
 
   /**
+   * Gets the truck repository
+   */
+  private async getTruckRepository() {
+    return this.truckRepositoryProvider();
+  }
+
+  /**
    * Gets the message publisher
    */
   private async getMessagePublisher() {
-    const t = await this.messagePublisherProvider(RabbitMQExchange.Default);
-    return t;
+    return this.messagePublisherProvider(RabbitMQExchange.Default);
   }
 }

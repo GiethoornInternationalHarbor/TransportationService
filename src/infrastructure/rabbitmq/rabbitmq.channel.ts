@@ -14,7 +14,7 @@ export async function getRabbitMQChannel(): Promise<RabbitMQChannel> {
     throw new Error('No AMQP URL was provided');
   }
 
-  return await retry(
+  return retry(
     async () => {
       const connection = await amqplib.connect(envAmqpUrl);
       const channel = await connection.createChannel();
@@ -26,7 +26,7 @@ export async function getRabbitMQChannel(): Promise<RabbitMQChannel> {
     {
       factor: 1,
       onRetry: err => {
-        console.warn('Retrying to connnect to AMQP', err);
+        console.warn('Retrying to connect to AMQP', err);
       }
     }
   );

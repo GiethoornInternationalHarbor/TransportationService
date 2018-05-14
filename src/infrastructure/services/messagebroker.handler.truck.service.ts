@@ -1,4 +1,4 @@
-import { inject, injectable, postConstruct } from 'inversify';
+import { inject, injectable } from 'inversify';
 import { ITruckService } from '../../application/services/itruck.service';
 import { TYPES } from '../../di/types';
 import { Truck } from '../../domain/truck';
@@ -17,7 +17,6 @@ export class MessageBrokerHandlerTruckService {
     @inject(TYPES.ITruckService) private truckService: ITruckService
   ) {}
 
-  @postConstruct()
   public async postInit() {
     this.messageHandler = await this.messageHandlerProvider(
       RabbitMQExchange.Default,

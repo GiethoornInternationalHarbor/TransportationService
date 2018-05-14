@@ -1,48 +1,60 @@
-import { assert, expect, use as chaiUse } from 'chai';
+import { assert, use as chaiUse } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { Container } from 'inversify';
 import 'mocha';
-import { IMessagePublisher } from 'src/infrastructure/messaging/imessage.publisher';
 import * as TypeMoq from 'typemoq';
 import { ITruckService } from '../../../src/application/services/itruck.service';
 import { diContainer } from '../../../src/di/di.config';
+// tslint:disable-next-line:ordered-imports
+import { bootstrap } from '../../../src/di/bootstrap';
 import { TYPES } from '../../../src/di/types';
-import { InfrastructureContainerModule } from '../../../src/infrastructure/di/di.config';
-// tslint:disable-next-line:max-line-length
-import { RepositoryAndMessageBrokerTruckService } from '../../../src/infrastructure/services/repository.messagebroker.truck.service';
+import { Truck } from '../../../src/domain/truck';
+import { TruckStatus } from '../../../src/domain/truckStatus';
+import {
+  InfrastructureContainerModule,
+  TruckRepositoryProvider
+} from '../../../src/infrastructure/di/di.config';
+import { IMessagePublisher } from '../../../src/infrastructure/messaging/imessage.publisher';
+import { MessageType } from '../../../src/infrastructure/messaging/message.types';
+import { ITruckRepository } from '../../../src/infrastructure/repository/itruck.repository';
 import { MockTruckRepository } from './mock.truck.repository';
-
 chaiUse(chaiAsPromised);
 
 describe('Repository Truck Service Tests', () => {
+  before(() => {
+    bootstrap(diContainer);
+  });
+
+  let mockedMessagePublisher: TypeMoq.IMock<IMessagePublisher>;
   beforeEach(async () => {
     // Make a snapshot before applying changes
     diContainer.snapshot();
 
-    diContainer.bind(TYPES.ITruckRepository).to(MockTruckRepository);
+    const mockedTruckRepo = new MockTruckRepository();
+    diContainer
+      .rebind(TYPES.TruckRepositoryProvider)
+      .toProvider<ITruckRepository>(context => () =>
+        Promise.resolve(mockedTruckRepo)
+      );
 
     // Mock the message handler
-    const mock: TypeMoq.IMock<IMessagePublisher> = TypeMoq.Mock.ofType();
+    mockedMessagePublisher = TypeMoq.Mock.ofType();
     // Setup .then handler because we need to be able to handle promises
-    mock.setup((x: any) => x.then).returns(() => undefined);
-    mock.setup(x => x.publishMessage).returns(() => {
-      return (x, y) => Promise.resolve();
-    });
+    mockedMessagePublisher.setup((x: any) => x.then).returns(() => undefined);
+    mockedMessagePublisher
+      .setup(x =>
+        x.publishMessage(TypeMoq.It.isAnyNumber(), TypeMoq.It.isAny())
+      )
+      .returns(() => Promise.resolve());
 
     diContainer
-      .bind(TYPES.MessagePublisherProvider)
+      .rebind(TYPES.MessagePublisherProvider)
       .toProvider<IMessagePublisher>(context => {
         return (exchange: string, queue: string) => {
           return new Promise(resolve => {
-            resolve(mock.object);
+            resolve(mockedMessagePublisher.object);
           });
         };
       });
-
-    diContainer
-      .bind<ITruckService>(TYPES.ITruckService)
-      .to(RepositoryAndMessageBrokerTruckService)
-      .inSingletonScope();
   });
 
   afterEach(() => {
@@ -58,7 +70,7 @@ describe('Repository Truck Service Tests', () => {
     };
 
     // Initial arrive should work
-    await truckService.arrive(truck);
+    await assert.isFulfilled(truckService.arrive(truck));
 
     // This should break
     await assert.isRejected(truckService.arrive(truck));
@@ -72,18 +84,196 @@ describe('Repository Truck Service Tests', () => {
     };
 
     // First we arrive
-    await truckService.arrive(truck);
+    await assert.isFulfilled(truckService.arrive(truck));
 
     // Next we ensure we are arrived
-    await truckService.arrived(truck.licensePlate);
+    await assert.isFulfilled(truckService.arrived(truck.licensePlate));
 
     // Now we are departing and departed
-    await truckService.depart(truck);
+    await assert.isFulfilled(truckService.depart(truck));
 
     // We are fully departed now
-    await truckService.departed(truck.licensePlate);
+    await assert.isFulfilled(truckService.departed(truck.licensePlate));
 
     // We should now be able to arrive again with the same license plate
     await assert.isFulfilled(truckService.arrive(truck));
+  });
+
+  it('A message is broadcasted when an arriving truck is cleared', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    // First we arrive
+    await assert.isFulfilled(truckService.arrive(truck));
+
+    // Now we have been cleared
+    await assert.isFulfilled(truckService.cleared(truck.licensePlate));
+
+    // Check if the status is updated
+    const updatedTruck = await truckRepository.findByLicensePlate(
+      truck.licensePlate
+    );
+    assert.strictEqual(updatedTruck.status, TruckStatus.ARRIVED);
+
+    // Also check if the arrived event has been sent
+    await mockedMessagePublisher.verify(
+      x =>
+        x.publishMessage(
+          TypeMoq.It.isValue(MessageType.TruckArrived),
+          TypeMoq.It.isObjectWith<Truck>(truck)
+        ),
+      TypeMoq.Times.once()
+    );
+  });
+
+  it('A message is broadcasted when a departing truck is cleared', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    // First we arrive
+    await assert.isFulfilled(truckService.arrive(truck));
+
+    // Now we have been cleared
+    await assert.isFulfilled(truckService.cleared(truck.licensePlate));
+
+    // Now we depart again
+    await assert.isFulfilled(truckService.depart(truck));
+
+    // Now we have been cleared and fully departed if correct
+    await assert.isFulfilled(truckService.cleared(truck.licensePlate));
+
+    // Check if the status is updated
+    const updatedTruck = await truckRepository.findByLicensePlate(
+      truck.licensePlate
+    );
+
+    // Since the truck should not be in the repository anymore, assert on undefined
+    assert.isUndefined(updatedTruck);
+
+    // Also check if the departed event has been sent
+    await mockedMessagePublisher.verify(
+      x =>
+        x.publishMessage(
+          TypeMoq.It.isValue(MessageType.TruckDeparted),
+          TypeMoq.It.isObjectWith<Truck>(truck)
+        ),
+      TypeMoq.Times.once()
+    );
+  });
+
+  it('A truck is updated when a container is loaded', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    await assert.isFulfilled(truckRepository.create(new Truck(truck)));
+    await assert.isFulfilled(
+      truckRepository.updateStatus(truck.licensePlate, TruckStatus.ARRIVED)
+    );
+
+    const container = {
+      number: '123',
+      product: {
+        name: 'Ca324',
+        type: '46'
+      }
+    };
+
+    await assert.isFulfilled(
+      truckService.containerLoaded(truck.licensePlate, container)
+    );
+
+    const foundTruck = await truckRepository.findByLicensePlate(
+      truck.licensePlate
+    );
+    assert.deepEqual(foundTruck.container, container);
+  });
+
+  it('A truck is updated when a container is unloaded', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate',
+      container: {
+        number: '123',
+        product: {
+          name: 'Ca324',
+          type: '46'
+        }
+      }
+    };
+
+    await assert.isFulfilled(truckRepository.create(new Truck(truck)));
+    await assert.isFulfilled(
+      truckRepository.updateStatus(truck.licensePlate, TruckStatus.ARRIVED)
+    );
+
+    await assert.isFulfilled(
+      truckService.containerUnloaded(truck.licensePlate)
+    );
+
+    const foundTruck = await truckRepository.findByLicensePlate(
+      truck.licensePlate
+    );
+    assert.isUndefined(foundTruck.container);
+  });
+
+  it('A truck is not updated with invalid data of a container', async () => {
+    const truckService: ITruckService = diContainer.get(TYPES.ITruckService);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+
+    const truck = {
+      licensePlate: 'test plate'
+    };
+
+    await assert.isFulfilled(truckRepository.create(new Truck(truck)));
+    await assert.isFulfilled(
+      truckRepository.updateStatus(truck.licensePlate, TruckStatus.ARRIVED)
+    );
+
+    const container = {
+      number: '123'
+    };
+
+    await assert.isRejected(
+      truckService.containerLoaded(truck.licensePlate, container)
+    );
   });
 });

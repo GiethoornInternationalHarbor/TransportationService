@@ -2,20 +2,19 @@ import bodyParser from 'body-parser';
 import express from 'express';
 import helmet from 'helmet';
 import { Container } from 'inversify';
-import {
-  interfaces,
-  InversifyExpressServer,
-  TYPE
-} from 'inversify-express-utils';
+import { InversifyExpressServer } from 'inversify-express-utils';
 import '../controllers/truck.controller';
-import { InfrastructureContainerModule } from '../infrastructure/di/di.config';
+import {
+  checkInfrastructureInitialization,
+  InfrastructureContainerModule
+} from '../infrastructure/di/di.config';
 import { TYPES } from './types';
 
-export async function bootstrap(container: Container) {
+export function bootstrap(container: Container) {
   const port = process.env.PORT || 3000;
 
   if (container.isBound(TYPES.App) === false) {
-    await container.loadAsync(InfrastructureContainerModule);
+    container.load(InfrastructureContainerModule);
 
     const server = new InversifyExpressServer(container);
 
@@ -44,6 +43,23 @@ export async function bootstrap(container: Container) {
           }
 
           next(err);
+        }
+      );
+
+      expressApp.use(
+        (
+          err: Error,
+          req: express.Request,
+          res: express.Response,
+          next: express.NextFunction
+        ) => {
+          if (err instanceof TypeError) {
+            res.status(400).json({
+              errors: [err.message]
+            });
+          } else {
+            next(err);
+          }
         }
       );
 

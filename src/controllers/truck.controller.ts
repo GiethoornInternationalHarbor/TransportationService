@@ -32,6 +32,6 @@ export class TruckController implements interfaces.Controller {
     @response() res: express.Response
   ) {
     const truck = await this.truckService.depart(req.body);
-    res.status(201).json(truck);
+    res.status(200).json(truck);
   }
 }
