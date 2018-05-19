@@ -1,4 +1,4 @@
-import { use as chaiUse } from 'chai';
+import { assert, use as chaiUse } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import express from 'express';
 import 'mocha';
@@ -150,5 +150,39 @@ describe('API Truck Tests', () => {
         ),
       TypeMoq.Times.once()
     );
+  });
+
+  it('A container is not changed when a call is made to /api/truck/depart', async () => {
+    const expressApp = diContainer.get<express.Application>(TYPES.App);
+
+    const body = {
+      licensePlate: 'AB-CD-12',
+      container: {
+        product: {
+          name: 'Ca324',
+          type: '46'
+        },
+        number: '123'
+      }
+    };
+
+    // Ensure the truck is created else we can't depart
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+    await truckRepository.create(new Truck(body));
+    await truckRepository.updateStatus(body.licensePlate, TruckStatus.ARRIVED);
+
+    const response = await supertest(expressApp)
+      .post('/api/truck/depart')
+      .send(body)
+      .expect(200);
+
+    // Now we need to check if the container is not changed (this may only be changed by events ShipContainerLoaded and ShipContainerUnloaded)
+    const truck = await truckRepository.findByLicensePlate(body.licensePlate);
+
+    assert.deepEqual(truck.container, body.container);
   });
 });
