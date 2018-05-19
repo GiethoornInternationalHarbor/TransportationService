@@ -54,15 +54,9 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     const departingTruck = new Truck(body);
 
     // Update the status of the truck
-    let updatedTruck = await truckRepo.updateStatus(
+    const updatedTruck = await truckRepo.updateStatus(
       departingTruck.licensePlate,
       TruckStatus.DEPARTING
-    );
-
-    // Update the container
-    updatedTruck = await truckRepo.updateContainer(
-      departingTruck.licensePlate,
-      departingTruck.container
     );
 
     // Now publish it as an message
