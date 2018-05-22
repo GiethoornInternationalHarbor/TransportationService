@@ -16,6 +16,7 @@ export class RabbitMQMessageHandler implements IMessageHandler {
   public async start(onMessage: IMessageReceivedCallback) {
     return this.rabbitChannel.consume(this.queue, async msg => {
       if (msg == null) {
+        // This should never ever happen ;-)
         return;
       }
 
@@ -24,6 +25,8 @@ export class RabbitMQMessageHandler implements IMessageHandler {
 
       if (receivedType === MessageType.Unknown) {
         // We do not need to handle this, since it is not in our known MessageType values
+        // But we still need to acknowledge the message
+        this.rabbitChannel.ack(msg);
         return;
       }
 
