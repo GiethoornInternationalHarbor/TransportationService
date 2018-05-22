@@ -11,7 +11,7 @@ export class RabbitMQMessageHandler implements IMessageHandler {
   constructor(
     private readonly queue: string,
     private readonly rabbitChannel: RabbitMQChannel
-  ) { }
+  ) {}
 
   public async start(onMessage: IMessageReceivedCallback) {
     return this.rabbitChannel.consume(this.queue, async msg => {
