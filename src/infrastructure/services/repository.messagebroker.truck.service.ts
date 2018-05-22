@@ -53,6 +53,19 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
 
     const departingTruck = new Truck(body);
 
+    // First check if we are not in a conflicting state
+    const truck = await truckRepo.findByLicensePlate(
+      departingTruck.licensePlate
+    );
+
+    if (
+      truck.status === TruckStatus.UNKNOWN ||
+      truck.status === TruckStatus.ARRIVING ||
+      truck.status === TruckStatus.DEPARTING
+    ) {
+      throw new TypeError('Truck is in invalid state.');
+    }
+
     // Update the status of the truck
     const updatedTruck = await truckRepo.updateStatus(
       departingTruck.licensePlate,
