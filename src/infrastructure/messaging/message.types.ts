@@ -27,11 +27,11 @@ export namespace MessageType {
 }
 
 const messageTypeName = new Map<MessageType, string>([
-  [MessageType.TruckArriving, 'TruckArrivingEvent'],
-  [MessageType.TruckDeparting, 'TruckDepartingEvent'],
-  [MessageType.TruckArrived, 'TruckArrivedEvent'],
-  [MessageType.TruckDeparted, 'TruckDepartedEvent'],
-  [MessageType.TruckCleared, 'TruckClearedEvent'],
-  [MessageType.ShipContainerLoaded, 'ShipContainerLoadedEvent'],
-  [MessageType.ShipContainerUnloaded, 'ShipContainerUnloadedEvent']
+  [MessageType.TruckArriving, 'TruckArriving'],
+  [MessageType.TruckDeparting, 'TruckDeparting'],
+  [MessageType.TruckArrived, 'TruckArrived'],
+  [MessageType.TruckDeparted, 'TruckDeparted'],
+  [MessageType.TruckCleared, 'TruckCleared'],
+  [MessageType.ShipContainerLoaded, 'ShipContainerLoaded'],
+  [MessageType.ShipContainerUnloaded, 'ShipContainerUnloaded']
 ]);
