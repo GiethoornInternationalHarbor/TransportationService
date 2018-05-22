@@ -185,4 +185,26 @@ describe('API Truck Tests', () => {
 
     assert.deepEqual(truck.container, body.container);
   });
+
+  it('Returns a 400 when a truck is arriving but a call is send to /api/truck/depart', async () => {
+    // First get the app out of our diContainer
+    const expressApp = diContainer.get<express.Application>(TYPES.App);
+
+    const body = {
+      licensePlate: 'AB-CD-12'
+    };
+
+    // Ensure the truck is created else we can't depart
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+    await truckRepository.create(new Truck(body));
+
+    const response = await supertest(expressApp)
+      .post('/api/truck/depart')
+      .send(body)
+      .expect(400);
+  });
 });
