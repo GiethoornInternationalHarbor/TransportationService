@@ -2,12 +2,12 @@ import express from 'express';
 import { inject, injectable } from 'inversify';
 import {
   controller,
+  httpGet,
   httpPost,
   interfaces,
   next,
   request,
-  response,
-  httpGet
+  response
 } from 'inversify-express-utils';
 import { ITruckService } from '../application/services/itruck.service';
 import { TYPES } from '../di/types';
