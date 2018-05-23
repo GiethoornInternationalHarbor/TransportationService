@@ -24,6 +24,11 @@ export interface ITruckRepository {
   updateStatus(plate: string, newStatus: TruckStatus): Promise<Truck>;
 
   /**
+   * Gets all the trucks
+   */
+  getAll(): Promise<Truck[]>;
+
+  /**
    * Finds a truck by license plate
    * @param plate The plate of the truck
    */

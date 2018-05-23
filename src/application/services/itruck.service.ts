@@ -3,6 +3,11 @@ import { Truck } from '../../domain/truck';
 
 export interface ITruckService {
   /**
+   * Gets an overview of all the trucks at the harbor or arriving/departing
+   */
+  getOverview(): Promise<Truck[]>;
+
+  /**
    * Handles incoming trucks
    * @param body The incoming data
    */

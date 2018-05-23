@@ -8,6 +8,10 @@ import { ITruckRepository } from '../../../src/infrastructure/repository/itruck.
 export class MockTruckRepository implements ITruckRepository {
   private trucks: Truck[] = [];
 
+  public async getAll(): Promise<Truck[]> {
+    return this.trucks;
+  }
+
   public async create(truck: Truck): Promise<Truck> {
     this.trucks.push(truck);
     return truck;

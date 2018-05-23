@@ -207,4 +207,37 @@ describe('API Truck Tests', () => {
       .send(body)
       .expect(400);
   });
+
+  it('Returns all trucks when a call is made to /api/truck', async () => {
+    // First get the app out of our diContainer
+    const expressApp = diContainer.get<express.Application>(TYPES.App);
+
+    const truckRepositoryProvider = diContainer.get<TruckRepositoryProvider>(
+      TYPES.TruckRepositoryProvider
+    );
+
+    const truckRepository = await truckRepositoryProvider();
+    await truckRepository.create(new Truck({ licensePlate: 'AB' }));
+    await truckRepository.create(new Truck({ licensePlate: 'AB-CD' }));
+    await truckRepository.create(new Truck({ licensePlate: 'AB-12' }));
+
+    const response = await supertest(expressApp)
+      .get('/api/truck')
+      .expect(200);
+
+    assert.isArray(response.body);
+
+    const receivedArray = response.body as any[];
+
+    // Should contain all the previously craeted license plates
+    assert.isAtLeast(receivedArray.findIndex(x => x.licensePlate === 'AB'), 0);
+    assert.isAtLeast(
+      receivedArray.findIndex(x => x.licensePlate === 'AB-CD'),
+      0
+    );
+    assert.isAtLeast(
+      receivedArray.findIndex(x => x.licensePlate === 'AB-12'),
+      0
+    );
+  });
 });

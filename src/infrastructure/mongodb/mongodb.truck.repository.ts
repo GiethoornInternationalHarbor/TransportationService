@@ -17,6 +17,16 @@ export class MongoDbTruckRepository implements ITruckRepository {
     this.Model = dbClient.model<ITruckDocument>('Truck', TruckSchema);
   }
 
+  public async getAll(): Promise<Truck[]> {
+    const foundTrucks = await this.Model.find();
+
+    const correctedTrucks = foundTrucks.map(x =>
+      mapModelToEntity<ITruckDocument, Truck>(x, Truck)
+    );
+
+    return correctedTrucks;
+  }
+
   public async create(truck: Truck): Promise<Truck> {
     const createdModel = await this.Model.create(truck);
 

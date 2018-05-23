@@ -20,6 +20,11 @@ export class RepositoryAndMessageBrokerTruckService implements ITruckService {
     private readonly messagePublisherProvider: MessagePublisherProvider
   ) {}
 
+  public async getOverview(): Promise<Truck[]> {
+    const truckRepo = await this.getTruckRepository();
+    return truckRepo.getAll();
+  }
+
   public async arrive(body: any): Promise<Truck> {
     const truckRepo = await this.getTruckRepository();
 
