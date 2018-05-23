@@ -6,7 +6,8 @@ import {
   interfaces,
   next,
   request,
-  response
+  response,
+  httpGet
 } from 'inversify-express-utils';
 import { ITruckService } from '../application/services/itruck.service';
 import { TYPES } from '../di/types';
@@ -16,6 +17,16 @@ export class TruckController implements interfaces.Controller {
   constructor(
     @inject(TYPES.ITruckService) private truckService: ITruckService
   ) {}
+
+  /**
+   * Gets an overview of all the arriving/departing or already arrived at the harbor
+   * @param res The response
+   */
+  @httpGet('/')
+  private async getAll(@response() res: express.Response) {
+    const trucks = await this.truckService.getOverview();
+    res.status(200).json(trucks);
+  }
 
   @httpPost('/arrive')
   private async arrive(
