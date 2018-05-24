@@ -277,14 +277,7 @@ describe('Repository Truck Service Tests', () => {
     );
 
     const container = {
-      serialShippingContainerCode: 'ABasdjfs',
-      containerType: ContainerType.Normal,
-      products: [
-        {
-          name: 'Ca324',
-          type: ProductType.Normal
-        }
-      ]
+      serialShippingContainerCode: 'ABasdjfs'
     };
 
     await assert.isRejected(
