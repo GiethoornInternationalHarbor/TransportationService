@@ -1,9 +1,10 @@
-import { Model } from 'objectmodel';
+import { ArrayModel, BasicModel, Model } from 'objectmodel';
+import { ContainerType } from './containerType';
+import { Product } from './product';
+import { ProductType } from './productType';
 
 export class Container extends Model({
-  number: String,
-  product: {
-    name: String,
-    type: String
-  }
+  serialShippingContainerCode: String,
+  containerType: BasicModel(Number).assert(n => n in ContainerType),
+  products: ArrayModel(Product)
 }) {}
