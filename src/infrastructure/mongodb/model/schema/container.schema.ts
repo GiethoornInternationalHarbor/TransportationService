@@ -3,7 +3,7 @@ import { ProductSchema } from './product.schema';
 
 export const ContainerSchema = new Schema({
   serialShippingContainerCode: String,
-  product: [ProductSchema],
+  products: [ProductSchema],
   containerType: {
     type: Number,
     required: true
