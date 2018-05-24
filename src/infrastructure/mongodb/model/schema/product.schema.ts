@@ -2,7 +2,7 @@ import { Document, Schema } from 'mongoose';
 
 export const ProductSchema = new Schema({
   name: String,
-  type: {
+  productType: {
     type: Number,
     required: true
   }
