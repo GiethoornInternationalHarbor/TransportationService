@@ -205,7 +205,7 @@ describe('Repository Truck Service Tests', () => {
       products: [
         {
           name: 'Ca324',
-          type: ProductType.Normal
+          productType: ProductType.Normal
         }
       ]
     };
@@ -237,7 +237,7 @@ describe('Repository Truck Service Tests', () => {
         products: [
           {
             name: 'Ca324',
-            type: ProductType.Normal
+            productType: ProductType.Normal
           }
         ]
       }

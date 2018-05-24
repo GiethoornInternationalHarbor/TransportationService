@@ -72,7 +72,7 @@ describe('API Truck Tests', () => {
         products: [
           {
             name: 'Ca324',
-            type: ProductType.Normal
+            productType: ProductType.Normal
           }
         ]
       }
@@ -95,7 +95,7 @@ describe('API Truck Tests', () => {
         products: [
           {
             name: 'Ca324',
-            type: ProductType.Normal
+            productType: ProductType.Normal
           }
         ]
       }
@@ -171,7 +171,7 @@ describe('API Truck Tests', () => {
         products: [
           {
             name: 'Ca324',
-            type: ProductType.Normal
+            productType: ProductType.Normal
           }
         ]
       }
