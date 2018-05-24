@@ -8,6 +8,8 @@ import { diContainer } from '../../../src/di/di.config';
 // tslint:disable-next-line:ordered-imports
 import { bootstrap } from '../../../src/di/bootstrap';
 import { TYPES } from '../../../src/di/types';
+import { ContainerType } from '../../../src/domain/containerType';
+import { ProductType } from '../../../src/domain/productType';
 import { Truck } from '../../../src/domain/truck';
 import { TruckStatus } from '../../../src/domain/truckStatus';
 import { TruckRepositoryProvider } from '../../../src/infrastructure/di/di.config';
@@ -65,11 +67,14 @@ describe('API Truck Tests', () => {
 
     const body = {
       container: {
-        product: {
-          name: 'Ca324',
-          type: '46'
-        },
-        number: '123'
+        serialShippingContainerCode: 'ABasdjfs',
+        containerType: ContainerType.Normal,
+        products: [
+          {
+            name: 'Ca324',
+            type: ProductType.Normal
+          }
+        ]
       }
     };
 
@@ -85,11 +90,14 @@ describe('API Truck Tests', () => {
 
     const body = {
       container: {
-        product: {
-          name: 'Ca324',
-          type: '46'
-        },
-        number: '123'
+        serialShippingContainerCode: 'ABasdjfs',
+        containerType: ContainerType.Normal,
+        products: [
+          {
+            name: 'Ca324',
+            type: ProductType.Normal
+          }
+        ]
       }
     };
 
@@ -158,11 +166,14 @@ describe('API Truck Tests', () => {
     const body = {
       licensePlate: 'AB-CD-12',
       container: {
-        product: {
-          name: 'Ca324',
-          type: '46'
-        },
-        number: '123'
+        serialShippingContainerCode: 'ABasdjfs',
+        containerType: ContainerType.Normal,
+        products: [
+          {
+            name: 'Ca324',
+            type: ProductType.Normal
+          }
+        ]
       }
     };
 
